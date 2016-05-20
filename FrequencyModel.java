@@ -14,7 +14,7 @@ public class FrequencyModel {
 	}
 	
 	public Double getFrequency(String key){
-		if(!hashtable.containsKey(key)) return (double) 1.0/1000000.0;
+		if(!hashtable.containsKey(key)||hashtable.get(key)==0) return (double) 1.0/1000000.0;
 		return hashtable.get(key);
 	}
 	

@@ -7,21 +7,37 @@ import java.util.Set;
 public class Corrector {
 	
 	public static final int MAX_EDIT_DISTANCE=4;
+	private String lexFile;
+	private ArrayList<WordObject> words;
+	private FrequencyModel model;
 	
-	public static FrequencyModel trainModel(){
-		ArrayList<String> lines=FileIO.readFromFile("Lexique.txt");
-		ArrayList<WordObject> words=new ArrayList<WordObject>();
-		FrequencyModel model=new FrequencyModel();
+	public Corrector(String lexFile){
+		this.lexFile=lexFile;
+		ArrayList<String> lines=FileIO.readFromFile(lexFile);
+		words=new ArrayList<WordObject>();
 		for(String line:lines){
 			words.add(new WordObject(line));
 		}
+		//setHomophones();
+		model=trainModel();
+	}
+	
+	private void setHomophones() {
+		words.parallelStream().filter(w->w.numberOfHomophones()>0).forEach(w->w.addHomophones(words));
+		/*for(WordObject word:words)
+			if(word.numberOfHomophones()>0)
+				word.addHomophones(words);*/
+	}
+
+	public FrequencyModel trainModel(){
+		model=new FrequencyModel();
 		for(WordObject word:words){
 			model.add(word.getSpelling(),word.bookCorpusFreq());
 		}
 		return model;
 	}
 	
-	public static String correct(String word,FrequencyModel model){
+	public String correct(String word){
 		ArrayList<Set<String>> corrections;
 		int wordLength=word.length();
 		int generationCost=wordLength*2+wordLength-1+CorrectionGenerator.ALPHABET.length*wordLength;
@@ -52,11 +68,12 @@ public class Corrector {
 		return word;
 	}
 	
-	public static String keyMax(Set<String> keys,FrequencyModel model){
+	private String keyMax(Set<String> keys,FrequencyModel model){
 		String maxString="";
 		double maxVal=0;
 		for(String key:keys){
-			if(model.getFrequency(key)>maxVal){
+			double freq=model.getFrequency(key);
+			if(freq>maxVal){
 				maxVal=model.getFrequency(key);
 				maxString=key;
 			}
@@ -67,10 +84,17 @@ public class Corrector {
 	public static void main(String[] args) {
 		Scanner input=new Scanner(System.in);
 		boolean finished=false;
-		FrequencyModel model=trainModel();
+		Corrector c=new Corrector("Lexique.txt");
+		/*c.setHomophones();
+		for(WordObject word:c.words){
+			System.out.println(word);
+			for(WordObject homophone:word.getHomophones()){
+				System.out.println(" "+homophone);
+			}
+		}*/
 		while(!finished){
 			System.out.println("Enter a word to test: ");
-			System.out.println(correct(input.next(),model));
+			System.out.println(c.correct(input.next()));
 		}
 		input.close();
 	}
