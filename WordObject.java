@@ -12,7 +12,7 @@ public class WordObject {
 	public WordObject(String line){
 		String[] elements=line.split("\t");
 		assert elements.length==5;
-		spelling=elements[0];
+		spelling=elements[0].toLowerCase();
 		filmFrequency=Double.parseDouble(elements[1]);
 		bookFrequency=Double.parseDouble(elements[2]);
 		numberOfHomophones=Integer.parseInt(elements[3]);

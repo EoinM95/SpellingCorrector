@@ -8,7 +8,7 @@ public class FrequencyModel {
 	 * Class which represents frequency model/default dictionary,
 	 * default value always 1
 	 */
-	Hashtable<String,Double> hashtable;
+	private Hashtable<String,Double> hashtable;
 	public FrequencyModel(){
 		hashtable=new Hashtable<String,Double>();
 	}
