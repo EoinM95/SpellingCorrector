@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -11,7 +13,6 @@ import java.util.Set;
 public class Corrector {
 	
 	public static final int MAX_EDIT_DISTANCE=4;
-	//private String lexFile;
 	private ArrayList<WordObject> words;
 	private FrequencyModel model;
 	/**
@@ -44,7 +45,7 @@ public class Corrector {
 	private void trainModel(){
 		model=new FrequencyModel();
 		for(WordObject word:words){
-			model.add(word.getSpelling(),word.bookCorpusFreq());
+			model.add(word.getSpelling(),word.filmCorpusFreq());
 		}
 	}
 	
@@ -122,6 +123,8 @@ public class Corrector {
 				if(!editSet.isEmpty()){
 					String correction=keyMax(editSet, model);
 					returnList[correctionsFound++]=correction;
+					if(correctionsFound>=k)
+						break;
 					editSet.remove(correction);
 				}
 			}
@@ -141,24 +144,25 @@ public class Corrector {
 		return maxString;
 	}
 	
-	public static void main(String[] args) {
-		Scanner input=new Scanner(System.in);
-		boolean finished=false;
-		Corrector c=new Corrector("Lexique.txt");
-		/*c.setHomophones();
-		for(WordObject word:c.words){
-			System.out.println(word);
-			for(WordObject homophone:word.getHomophones()){
-				System.out.println(" "+homophone);
-			}
-		}*/
-		while(!finished){
-			System.out.println("Enter a word to test: ");
-			System.out.println(c.correct(input.next()));
+	public void correctTextFromFile(String filename, String outputFile){
+		ArrayList<String> lines = FileIO.readFromFile(filename);
+		File f=new File(outputFile);
+		try {
+			f.createNewFile();
+		} catch (IOException e) {
+			System.out.println("Erreur en créeant le fichier");
+			return;
 		}
-		input.close();
+		StringBuilder output=new StringBuilder();
+		for(String line:lines){
+			for(String word:line.split(" ")){
+				String correction=correct(word);
+				if(!correction.equals(word)){
+					output.append("Mal-écrit: "+word+" Corrigé à: "+System.getProperty("line.separator"));
+				}
+			}
+		}
+		FileIO.write(output.toString(),outputFile);
 	}
 
-	
-	
 }
